@@ -12,24 +12,45 @@ import java.net.http.HttpResponse;
 
 public class ExchangeQuery {
 
-    public Currency queryExchange(String targetCurrency, String baseCurrency, double amount) throws IOException, InterruptedException {
+    private final String token;
 
-        Currency queriedExchange;
+    private final HttpClient client = HttpClient.newHttpClient();
+
+    public ExchangeQuery() {
         Dotenv dotenv = Dotenv.load();
-        String token = dotenv.get("EXCHANGER_TOKEN");
+        this.token = dotenv.get("EXCHANGE_TOKEN");
+    }
 
-        String url = "https://v6.exchangerate-api.com/v6/" + token +
+    public Exchange queryExchange(String targetCurrency, String baseCurrency, double amount) throws IOException, InterruptedException {
+
+        Exchange queriedExchange;
+
+        String url = "https://v6.exchangerate-api.com/v6/" + this.token +
                 "/pair/" + baseCurrency +"/"+targetCurrency+"/" + amount;
 
-        HttpClient client = HttpClient.newHttpClient();
+//        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .build();
 
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            queriedExchange = new Gson().fromJson(response.body(), Currency.class);
+        HttpResponse<String> response = this.client.send(request, HttpResponse.BodyHandlers.ofString());
+        queriedExchange = new Gson().fromJson(response.body(), Exchange.class);
 
-            return queriedExchange;
+        return queriedExchange;
     }
+
+    public String queryCurrencies() throws IOException, InterruptedException {
+        String url = "https://v6.exchangerate-api.com/v6/" + this.token + "/codes";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build();
+
+        HttpResponse<String> response = this.client.send(request, HttpResponse.BodyHandlers.ofString());
+//        System.out.println(new Gson().fromJson(response.body(),  );
+
+        return "hello";
+    }
+
 }
